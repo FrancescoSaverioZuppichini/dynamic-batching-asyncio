@@ -1,14 +1,19 @@
 import time
 from dataclasses import dataclass
 from pprint import pformat
-
+from PIL import Image
 import requests
 from concurrent.futures import ThreadPoolExecutor
-
+from io import BytesIO
+import base64
 from logger import logger
 
 URL = "http://127.0.0.1:8000"
 
+image = Image.open('pizza.png')
+buffered = BytesIO()
+image.save(buffered, format="JPEG")
+img_str = base64.b64encode(buffered.getvalue())
 
 @dataclass
 class Report:
@@ -28,7 +33,7 @@ class Report:
 
 
 def make_request_json():
-    return {"model_id": "test", "data": {}}
+    return {"model_id": "test", "data": {"image": img_str.decode('utf-8')}}
 
 
 class Benchmark:
