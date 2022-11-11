@@ -1,23 +1,14 @@
-import asyncio
-from typing import Any, Dict, Optional, Union
-
-import aiohttp
 from fastapi import FastAPI
-from pydantic import BaseModel
-
 from data_models import InferenceRequest
+from model import Model
+from utils import b64image_to_pil
 
-worker_url = "http://localhost:8001/inference"
-
-client = aiohttp.ClientSession()
-
+my_model = Model()
 
 app = FastAPI()
 
-
 @app.post("/inference")
 async def inference(req: InferenceRequest):
-    async with client.post(worker_url, json=req.dict(), timeout=5) as result:
-        result.raise_for_status()
-        response = await result.json()
-        return response
+    image = b64image_to_pil(req.data.image)
+    preds = my_model.inference([image])
+    return {"pred" : preds[0]}
