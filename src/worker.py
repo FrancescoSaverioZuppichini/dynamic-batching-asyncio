@@ -37,7 +37,7 @@ app = FastAPI()
 @app.on_event("startup")
 async def startup_event():
     app.batch_handler = BatchHandler(
-        max_batch_size=8, batch_timeout_ms=200, callback_fn=callback_fn
+        max_batch_size=16, batch_timeout_ms=200, callback_fn=callback_fn
     )
     asyncio.create_task(app.batch_handler.consume())
 

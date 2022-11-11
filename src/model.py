@@ -10,7 +10,9 @@ from torchvision.transforms.functional import to_tensor
 class Model:
     def __init__(self):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.model = resnet50(weights=ResNet50_Weights.IMAGENET1K_V1).eval()
+        self.model = (
+            resnet50(weights=ResNet50_Weights.IMAGENET1K_V1).eval().to(self.device)
+        )
         self.transform = torch.nn.Sequential(
             T.Resize((224, 224)),
             T.Normalize(
