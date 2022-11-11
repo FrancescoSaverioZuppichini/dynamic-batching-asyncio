@@ -1,19 +1,19 @@
-# Load balancer
+# Dynamic Batching with FastAPI and Asyncio
 
-Dynamic batching requests for a worker
+Minimum example for creating a http server with dynamic batching using FastAPI and Asyncio
 
 ## Getting Started
 
-Run the load balancer
+Run the worker
 
 ```
-uvicorn main:app --reload --loop uvloop
+cd src && uvicorn app:app --reload --loop uvloop
 ```
 
 Run the worker
 
 ```
-uvicorn worker:app --port 8001 --loop uvloop --reload 
+cd src && uvicorn worker:app --port 8001 --loop uvloop --reload 
 ```
 
 Run the benchmark
