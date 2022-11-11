@@ -16,7 +16,7 @@ batch_id = [-1]
 app = FastAPI()
 
 
-async def callback_fn(batch: List[dict]):
+async def callback_fn(batch: List[dict]) -> List[dict]:
     batch_id[0] += 1
     logger.info(f"[🦾] received {len(batch)} elements, doing work....")
     start = perf_counter()
@@ -44,5 +44,5 @@ async def startup_event():
 
 @app.post("/inference")
 async def inference(req: InferenceRequest):
-    reply = await app.batch_handler.append(req.data.dict())
-    return reply
+    res = await app.batch_handler.append(req.data.dict())
+    return res

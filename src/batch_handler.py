@@ -22,7 +22,7 @@ class BatchHandler:
         self.callback_fn = callback_fn
         self.inference_request_timeout = inference_request_timeout
 
-    async def append(self, data: dict):
+    async def append(self, data: dict) -> Awaitable:
         # add an unique idenfitier
         data["uid"] = str(uuid4())
         self._queue.append(data)
@@ -49,7 +49,7 @@ class BatchHandler:
                 logger.info(f"[📦] batched {len(batch)} requests")
                 asyncio.create_task(self.collect_replies(batch))
 
-    async def wait_for_reply(self, uid: str):
+    async def wait_for_reply(self, uid: str) -> dict:
         # wait for a specific request identified by a uid
         while True:
             await asyncio.sleep(0.1)
@@ -57,3 +57,30 @@ class BatchHandler:
                 response = self._responses[uid]
                 del self._responses[uid]
                 return response
+
+
+if __name__ == "__main__":
+    from pprint import pprint
+
+    async def main():
+        async def callback_fn(batch: List[dict]) -> List[dict]:
+            print(f"Processing items with uid = {[item['uid'] for item in batch]}")
+            return batch
+
+        handler = BatchHandler(
+            max_batch_size=8, batch_timeout_ms=200, callback_fn=callback_fn
+        )
+        # start the consumer, will look at stuff on the queue to batch
+        asyncio.create_task(handler.consume())
+        # sendint one item
+        res = await handler.append({"foo": "baa"})
+        pprint(res)
+        # sending more at the same time
+        res = await asyncio.gather(
+            handler.append({"foo": "baa"}),
+            handler.append({"foo": "baa1"}),
+            handler.append({"foo": "baa2"}),
+        )
+        pprint(res)
+
+    asyncio.run(main())
