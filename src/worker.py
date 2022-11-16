@@ -9,7 +9,7 @@ from data_models import InferenceRequest
 from logger import logger
 from model import Model
 from utils import b64image_to_pil
-from threading import Thread
+
 my_model = Model()
 
 batch_id = [-1]
@@ -37,9 +37,9 @@ app = FastAPI()
 @app.on_event("startup")
 async def startup_event():
     app.batch_handler = BatchHandler(
-        max_batch_size=16, batch_timeout_ms=200, callback_fn=callback_fn
+        max_batch_size=16, batch_timeout_ms=10, callback_fn=callback_fn
     )
-    
+
     asyncio.create_task(asyncio.to_thread(app.batch_handler.consume))
 
 
