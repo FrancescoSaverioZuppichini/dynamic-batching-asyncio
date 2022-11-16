@@ -3,14 +3,17 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from io import BytesIO
+from pathlib import Path
 from pprint import pformat
 from typing import List
+
+import numpy as np
 import pandas as pd
 import requests
 from PIL import Image
-from pathlib import Path
+
 from src.logger import logger
-import numpy as np
+
 URL = "http://127.0.0.1:8000"
 
 image = Image.open("./examples/cat.jpeg")
@@ -23,15 +26,10 @@ img_str = base64.b64encode(buffered.getvalue())
 class Report:
     times: List[float]
     misses: int
-    
-    
+
     def compute_stats(self) -> dict:
         times_ms = np.array(self.times) * 1000
-        return dict(
-            mean = [times_ms.mean()],
-            min = [times_ms.min()],
-            max = [times_ms.max()]
-        )
+        return dict(mean=[times_ms.mean()], min=[times_ms.min()], max=[times_ms.max()])
 
     def to_df(self, **kwargs) -> pd.DataFrame:
         df = pd.DataFrame(
@@ -49,7 +47,6 @@ class Report:
             old_df = pd.read_csv(filepath)
             df = pd.concat([old_df, df])
         df.to_csv(filepath, index=False)
-
 
     def print(self):
         print("🗒️ Report:")
@@ -80,25 +77,25 @@ class Benchmark:
         res = requests.post(f"{URL}/inference", json=make_request_json())
         try:
             elapsed = time.perf_counter() - start
-            logger.info(f"⬅️ Received {pformat(res.json())} after {elapsed * 1000:.2f}ms")
+            logger.info(
+                f"⬅️ Received {pformat(res.json())} after {elapsed * 1000:.2f}ms"
+            )
             self.times.append(elapsed)
         except requests.exceptions.JSONDecodeError:
             self.misses += 1
             time.sleep(5)
             logger.error("💣 Invalid answer from the server")
 
-    def __call__(self):        
+    def __call__(self):
         with ThreadPoolExecutor(self.num_threads) as p:
             # warmap
             list(p.map(self.test, [i for i in range(8)]))
             self.times = []
-            self.misses  = 0
+            self.misses = 0
             list(p.map(self.test, [i for i in range(self.num_requests)]))
 
     def make_report(self) -> Report:
-        return Report(
-            times=self.times, misses=self.misses
-        )
+        return Report(times=self.times, misses=self.misses)
 
 
 if __name__ == "__main__":
@@ -116,10 +113,9 @@ if __name__ == "__main__":
     try:
         bm = Benchmark(num_requests, num_threads, sleep_between_requests=sleep)
         bm()
-        bm.make_report().to_csv(Path("./benchmark.csv"), **dict(
-            num_threads=num_threads,
-            num_requests=num_requests,
-            sleep=sleep
-        ))
+        bm.make_report().to_csv(
+            Path("./benchmark.csv"),
+            **dict(num_threads=num_threads, num_requests=num_requests, sleep=sleep),
+        )
     except KeyboardInterrupt:
         bm.make_report().print()

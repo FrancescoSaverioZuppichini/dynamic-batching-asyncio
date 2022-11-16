@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+// The greeter service definition.
+service Worker {
+  // Sends a greeting
+  rpc inference (InferenceRequest) returns (InferenceReply) {}
+}
+
+// The request message containing the user's name.
+message InferenceRequest {
+    message InferenceData {
+        string image = 1;
+    }
+    InferenceData data = 1;
+}
+
+// The response message containing the greetings
+message InferenceReply {
+    uint32 batch_id = 1;
+    uint32 pred = 2;
+}
