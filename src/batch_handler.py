@@ -28,12 +28,12 @@ class BatchHandler:
         self._queue.append(data)
         return await self.wait_for_reply(data["uid"])
 
-    async def collect_replies(self, batch: List[dict]):
-        data = await self.callback_fn(batch)
+    def collect_replies(self, batch: List[dict]):
+        data = self.callback_fn(batch)
         for item in data:
             self._responses[item["uid"]] = item
 
-    async def consume(self):
+    def consume(self):
         # batch stuff and send to self.callback_fn
         while True:
             while self._queue and (
@@ -46,9 +46,9 @@ class BatchHandler:
                 self._queue = self._queue[self.max_batch_size :]
                 self._last_batch_sent = time.time()
                 logger.info(f"[📦] batched {len(batch)} requests")
-                asyncio.create_task(self.collect_replies(batch))
+                self.collect_replies(batch)
 
-            await asyncio.sleep(0.1)
+            time.sleep(0.01)
 
     async def wait_for_reply(self, uid: str) -> dict:
         # wait for a specific request identified by a uid
@@ -57,7 +57,7 @@ class BatchHandler:
                 response = self._responses[uid]
                 del self._responses[uid]
                 return response
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.01)
 
 
 if __name__ == "__main__":
