@@ -19,7 +19,7 @@ app = FastAPI()
 
 @app.on_event("startup")
 async def startup_event():
-    app.grpc_channel = grpc.aio.insecure_channel("[::]:50052 ")
+    app.grpc_channel = grpc.aio.insecure_channel("[::]:50053 ")
     app.stub = WorkerStub(app.grpc_channel)
 
 @app.on_event("shutdown")

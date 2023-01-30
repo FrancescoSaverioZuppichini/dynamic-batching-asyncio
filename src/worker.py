@@ -50,7 +50,7 @@ class Worker(worker_pb2_grpc.WorkerServicer):
 async def serve():
     server = grpc.aio.server()
     worker_pb2_grpc.add_WorkerServicer_to_server(Worker(), server)
-    listen_addr = "[::]:50052"
+    listen_addr = "[::]:50053"
     server.add_insecure_port(listen_addr)
     logger.info(f"Starting server on {listen_addr}")
     await server.start()
